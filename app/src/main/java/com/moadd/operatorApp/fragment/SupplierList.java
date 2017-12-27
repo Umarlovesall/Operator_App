@@ -63,7 +63,7 @@ public class SupplierList extends Fragment {
         proceed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (selectedSuppliersList.size()<=4)
+                if (selectedSuppliersList.size()<=3)
                 {
                     SupplierSetup fragment = new SupplierSetup();
                     FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
@@ -73,7 +73,7 @@ public class SupplierList extends Fragment {
                 }
                 else
                 {
-                    Toast.makeText(getActivity(),"Select Maximum 4 Suppliers Only",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"Select Maximum 3 Suppliers Only",Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -102,7 +102,8 @@ public class SupplierList extends Fragment {
         public String doInBackground(Void... params) {
             try {
                 //The link on which we have to POST data and in return it will return some data
-                String URL = "http://192.168.0.110:8084/Moaddi4/operator/serviesOperatorSupplierDetails.htm";
+               String URL = "https://www.moaddi.com/moaddi/operator/serviesOperatorSupplierDetails.htm";
+               // String URL = "https:// 192.168.0.104:8081/Moaddi1/operator/serviesOperatorSupplierDetails.htm";
                 //First Static then Dynamic afterwards
                 //Sending static userRoleId as of now.i.e. "13" static which will later be changed to dynamic
                 BarcodeResultSend b=new BarcodeResultSend();

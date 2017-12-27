@@ -1,46 +1,104 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+
+<LinearLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:orientation="vertical"
+    >
+<LinearLayout
     android:layout_width="match_parent"
-    android:orientation="vertical"
-    android:layout_height="match_parent"
-    android:background="#293d68">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.5"></LinearLayout>
+    android:layout_height="0dp"
+    android:layout_marginTop="20dp"
+    android:orientation="horizontal"
+    android:layout_weight="1.5">
 
     <Button
-        android:id="@+id/sendData"
-        style="?android:textAppearanceSmall"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.5"
-        android:layout_marginTop="30dp"
+        android:id="@+id/bar"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_weight="1"
         android:background="@drawable/shapes"
-        android:textColor="#fff"
         android:gravity="center"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
-        android:text="Send Data To Locks"
-        android:textStyle="bold|italic" />
+        android:text="Barcode On"
+        android:textColor="#fff" />
+</LinearLayout>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="2"
+    android:orientation="horizontal">
+    <EditText
+        android:id="@+id/bartext"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="20dp"
+        android:layout_weight="1.5"
+        android:hint="or type here"
+        android:textStyle="italic" />
     <Button
-        android:id="@+id/reset"
-        style="?android:textAppearanceSmall"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:id="@+id/add"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="0.5"
-        android:layout_marginTop="30dp"
-        android:background="@drawable/shapes"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="20dp"
+        android:text="Add"
         android:textColor="#fff"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
-        android:text="Lock Reset"
-        android:textStyle="bold|italic" />
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.75"></LinearLayout>
+        android:background="@drawable/shapes"/>
+</LinearLayout>
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="0.5"
+    android:layout_marginRight="20dp"
+    android:layout_marginTop="10dp"
+    >
+    <TextView
+        android:id="@+id/selectedLocks"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="20dp"
+        android:layout_weight="0.5"
+        android:background="@drawable/shapes"
+        android:text="  Selected Locks  :  "
+        android:textColor="#fff" />
+    <TextView
+        android:id="@+id/p1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="20dp"
+        android:background="@drawable/textview_border"
+        android:layout_weight="0.1"
+        android:textColor="#fff" />
+    <TextView
+        android:id="@+id/p2"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="20dp"
+        android:background="@drawable/textview_border"
+        android:layout_weight="0.1"
+
+        android:textColor="#fff" />
+    <TextView
+        android:id="@+id/p3"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="20dp"
+        android:layout_weight="0.1"
+        android:background="@drawable/textview_border"
+        android:textColor="#fff" />
+</LinearLayout>
+
+<ListView
+    android:id="@+id/lv"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_marginLeft="20dp"
+    android:layout_weight="6"></ListView>
+
+
 </LinearLayout>
