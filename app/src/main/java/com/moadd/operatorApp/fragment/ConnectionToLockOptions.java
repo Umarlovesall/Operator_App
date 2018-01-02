@@ -3,6 +3,8 @@ package com.moadd.operatorApp.fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,6 +12,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,11 +25,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.zxing.client.android.CaptureActivity;
+import com.moadd.operatorApp.AppDetailsPojo;
 import com.moadd.operatorApp.BarcodeResultSend;
 import com.moadd.operatorApp.GetDateAndTime;
 import com.moadd.operatorApp.LockBelongsToOperatorOrNot;
 import com.moadd.operatorApp.LocksecreateCode;
 import com.moadd.operatorApp.Login;
+import com.moadd.operatorApp.MainActivity;
 import com.moadd.operatorApp.wifiHotSpots;
 import com.moaddi.operatorApp.R;
 
@@ -36,6 +41,7 @@ import org.json.JSONObject;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -70,6 +76,7 @@ public class ConnectionToLockOptions extends Fragment {
     String msgReply;
     LocksecreateCode l;
     public static int flag=0;
+    String serialNumber;
     public ConnectionToLockOptions() {
         // Required empty public constructor
     }
@@ -127,7 +134,9 @@ public class ConnectionToLockOptions extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!barcode.getText().toString().trim().equals("")) {
-                    new HttpRequestTask().execute();
+                    //new HttpRequestTask().execute();
+                    al.add("1234567890");
+                    aa.notifyDataSetChanged();
                 } else {
                     Toast.makeText(getActivity(), "Enter Some Barcode First", Toast.LENGTH_LONG).show();
                 }
@@ -254,80 +263,88 @@ public class ConnectionToLockOptions extends Fragment {
                        // msgReply= "Hotspot Name : "+transfer.getString("OpHotspot",null)+"\n"+"Hotspot Password : "+transfer.getString("OpHotpassword",null)+"\n"+"Password Requirement : "+transfer.getString("OpPwNeeded",null)+"\n"+"Operator Setup Status : "+transfer.getInt("OperatorSetupStatus",0);
                     }*/
                     //else if (HomeFragment.al.contains(messageFromClient))
-                    if (messageFromClient.equals("YES")) {
-                        p2.setBackgroundColor(Color.parseColor("#008000"));
+
+                    if (messageFromClient.equals("FAIL1")) {
+                      //  p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT";
+                        //Toast.makeText(getActivity(), "Secret Numbers don't match", Toast.LENGTH_LONG).show();
+                        messageFromClient = "Secret Numbers don't match : "+messageFromClient;
+                        //Here send all that data to website too
+                    }
+                    else if (messageFromClient.equals("FAIL2")) {
+                       // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT";
+                        //Toast.makeText(getActivity(), "Problem saving date and time data", Toast.LENGTH_LONG).show();
+                        messageFromClient = "Problem saving date and time data : "+messageFromClient;
+                        //Here send all that data to website too
+                    }
+                    else if (messageFromClient.equals("FAIL3")) {
+                        //p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT";
+                        //Toast.makeText(getActivity(), "Problem saving Operator IDs data", Toast.LENGTH_LONG).show();
+                        messageFromClient = "Problem saving Operator IDs data : "+messageFromClient;
+                        //Here send all that data to website too
+                    }
+                    else if (messageFromClient.equals("FAIL4")) {
+                       // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT";
+                       // Toast.makeText(getActivity(), "Problem saving Operator Hotspot Details", Toast.LENGTH_LONG).show();
+                        messageFromClient = "Problem saving Operator Hotspot Details : "+messageFromClient;
+                        //Here send all that data to website too
+                    }
+                    else if (messageFromClient.equals("FAIL5")) {
+                       // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT";
+                       // Toast.makeText(getActivity(), "Problem saving Supplier Hotspot Details", Toast.LENGTH_LONG).show();
+                        messageFromClient = "Problem saving Supplier Hotspot Details : "+messageFromClient;
+                        //Here send all that data to website too
+                    }
+                    else if (messageFromClient.equals("FAIL6")) {
+                       // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT";
+                       // Toast.makeText(getActivity(), "Problem saving Connected Supplier Details", Toast.LENGTH_LONG).show();
+                        messageFromClient = "Problem saving Connected Supplier Details : "+messageFromClient;
+                        //Here send all that data to website too
+                    }
+                    else if (messageFromClient.equals("FAILRESET")) {
+                        // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT";
+                        //Toast.makeText(getActivity(), "Problem saving date and time data", Toast.LENGTH_LONG).show();
+                        messageFromClient = "Problem resetting lock details : "+messageFromClient;
+                        //Here send all that data to website too
+                    }
+                    else if (messageFromClient.equals("SUCCESS1")) {
+                       // p3.setBackgroundColor(Color.parseColor("#008000"));
                         if (typeOfData == 1) {
-                          //  msgReply = GetDateAndTime.timeStamp() + "#" + "Image Encoded String" + "#"+sp.getString("userId","")+"*"+sp.getString("appId","")+"#" + transfer.getString("OpHotspot", null) + "*" + transfer.getString("OpHotpassword", null) + "*" + transfer.getString("OpPwNeeded", null) + "#" + transfer.getString("SuHotspot", null) + "*" + transfer.getString("SuHotpassword", null + "*" + transfer.getString("SuPwNeeded", null)) + "#" + "91su302*945693885#";
-                            msgReply = "Image Encoded String";
+                            msgReply = "&"+GetDateAndTime.timeStamp()+"#"+transfer.getString("wifiTimeLimit","1");
                         } else if (typeOfData == 2) {
                             msgReply = "RESET";
                         }
                     }
-                    else if (messageFromClient.equals("FAIL1")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = "Disconnect";
-                        Toast.makeText(getActivity(), "Problem saving barcode data", Toast.LENGTH_LONG).show();
-                        //Here send all that data to website too
-                    }
-                    else if (messageFromClient.equals("FAIL2")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = "Disconnect";
-                        Toast.makeText(getActivity(), "Problem saving date and time data", Toast.LENGTH_LONG).show();
-                        //Here send all that data to website too
-                    }
-                    else if (messageFromClient.equals("FAIL3")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = "Disconnect";
-                        Toast.makeText(getActivity(), "Problem saving Operator IDs data", Toast.LENGTH_LONG).show();
-                        //Here send all that data to website too
-                    }
-                    else if (messageFromClient.equals("FAIL4")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = "Disconnect";
-                        Toast.makeText(getActivity(), "Problem saving Operator Hotspot Details", Toast.LENGTH_LONG).show();
-                        //Here send all that data to website too
-                    }
-                    else if (messageFromClient.equals("FAIL5")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = "Disconnect";
-                        Toast.makeText(getActivity(), "Problem saving Supplier Hotspot Details", Toast.LENGTH_LONG).show();
-                        //Here send all that data to website too
-                    }
-                    else if (messageFromClient.equals("FAIL6")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = "Disconnect";
-                        Toast.makeText(getActivity(), "Problem saving Connected Supplier Details", Toast.LENGTH_LONG).show();
-                        //Here send all that data to website too
-                    }
-                    else if (messageFromClient.equals("SUCCESS1")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = GetDateAndTime.timeStamp();
-                    }
                     else if (messageFromClient.equals("SUCCESS2")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply =sp.getString("userId","")+"*"+sp.getString("appId","") ;
+                        //p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply ="%"+sp.getString("userId","")+"*"+sp.getString("appId","") ;
                     }
                     else if (messageFromClient.equals("SUCCESS3")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = transfer.getString("OpHotspot", null) + "*" + transfer.getString("OpHotpassword", null) + "*" + transfer.getString("OpPwNeeded", null)  ;
+                       // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "$"+transfer.getString("OpHotspot", null) + "*" + transfer.getString("OpHotpassword", null) + "*" + transfer.getString("OpPwNeeded", null)  ;
                     }
                     else if (messageFromClient.equals("SUCCESS4")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply =transfer.getString("SuHotspot", null) + "*" + transfer.getString("SuHotpassword", null) + "*" + transfer.getString("SuPwNeeded", null);
+                       // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply ="@"+transfer.getString("SuHotspot", null) + "*" + transfer.getString("SuHotpassword", null) + "*" + transfer.getString("SuPwNeeded", null);
                     }
                     else if (messageFromClient.equals("SUCCESS5")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = "123456*654321#983938*839389#788888*888887" ;
+                       // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "!"+"1234567890*0987654321#9839381234*4321839389#7888888888*8888888887" ;
+                    }
+                    else if (messageFromClient.equals("SUCCESSRESET")) {
+                        // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT" ;
                     }
                     else if (messageFromClient.equals("SUCCESS6")) {
-                        p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = "Disconnect";
-                        Toast.makeText(getActivity(), "Successfull Data Transfer Complete", Toast.LENGTH_LONG).show();
-                        //Here send all that data to website too
-                    } else if (messageFromClient.equals("NO")) {
-                        p2.setBackgroundColor(Color.parseColor("#FF0000"));
-                        msgReply = "Disconnect";
-                        Toast.makeText(getActivity(), "Secret Numbers don't match", Toast.LENGTH_LONG).show();
+                       // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT";
+                      //  Toast.makeText(getActivity(), "Successfull Data Transfer Complete", Toast.LENGTH_LONG).show();
                         //Here send all that data to website too
                     }
                         //Toast.makeText(getActivity(), "Error in connection",Toast.LENGTH_LONG).show();
@@ -338,14 +355,19 @@ public class ConnectionToLockOptions extends Fragment {
                            /* l.setLockSnoNew(messageFromClient);
                             new HttpRequestTask1().execute();
                             p1.setBackgroundColor(Color.parseColor("#008000"));*/
+                           serialNumber=messageFromClient;
                             msgReply = "9839386601";
-                            p1.setBackgroundColor(Color.parseColor("#008000"));
+                           // p1.setBackgroundColor(Color.parseColor("#008000"));
                         }
+                    /*else if (messageFromClient.contains("FAIL"))
+                    {
+                        messageFromClient = "Data exchange failed"+ messageFromClient;
+                    }*/
                         else
                     {
-                        p1.setBackgroundColor(Color.parseColor("#FF0000"));
-                        msgReply="Disconnect";
-                        Toast.makeText(getActivity(), "Unexpected response from the lock! Try again", Toast.LENGTH_LONG).show();
+                        //p1.setBackgroundColor(Color.parseColor("#FF0000"));
+                        msgReply="DISCONNECT";
+                        //Toast.makeText(getActivity(), "Unexpected response from the lock! Try again", Toast.LENGTH_LONG).show();
                     }
 
                     count++;
@@ -358,6 +380,35 @@ public class ConnectionToLockOptions extends Fragment {
                         @Override
                         public void run() {
                             Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+                            if (message.contains("SUCCESS1"))
+                            {
+                                p1.setBackgroundColor(Color.parseColor("#008000"));
+                            }
+                            if (message.contains("SUCCESS5"))
+                            {
+                                p2.setBackgroundColor(Color.parseColor("#008000"));
+
+                            }
+                            if (message.contains("SUCCESS6"))
+                            {
+                                p3.setBackgroundColor(Color.parseColor("#008000"));
+
+                            }
+                            if (message.contains("FAIL1"))
+                            {
+                                p1.setBackgroundColor(Color.parseColor("#FF0000"));
+
+                            }
+                            if (message.contains("FAIL5"))
+                            {
+                                p2.setBackgroundColor(Color.parseColor("#FF0000"));
+
+                            }
+                            if (message.contains("FAIL6"))
+                            {
+                                p3.setBackgroundColor(Color.parseColor("#FF0000"));
+
+                            }
                         }
                     });
 
@@ -441,6 +492,46 @@ public class ConnectionToLockOptions extends Fragment {
 
             }
 
+        }
+    }
+    private class HttpRequestTask2 extends AsyncTask<Void, Void,String> {
+        // String a=null;
+        String la=null;
+        @Override
+        public  String doInBackground(Void... params) {
+            try {
+                //The link on which we have to POST data and in return it will return some data
+                //String URL = "https://192.168.0.104:8081/Moaddi1/operator/serviesforoperatorLogin.htm";
+                String URL = "https://www.moaddi.com/moaddi/operator/serviesoperatorlocknewSerialnumber";
+                LocksecreateCode lsc=new LocksecreateCode();
+                lsc.setLockSnoNew(serialNumber);
+                RestTemplate restTemplate = new RestTemplate();
+                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+                la = restTemplate.postForObject(URL,lsc,String.class);
+                return la;
+            } catch (Exception e) {
+                Log.e("MainActivity", e.getMessage(), e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String m) {
+            if (m!=null)
+            {
+                try {
+                    JSONObject l =new JSONObject(m);
+                    String st=l.getString("lockSno");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                msgReply=m;
+            }
+           else
+            {
+                msgReply="";
+            }
         }
     }
 }

@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.moadd.operatorApp.BarcodeResultSend;
 import com.moadd.operatorApp.LockBelongsToOperatorOrNot;
+import com.moadd.operatorApp.Login;
 import com.moaddi.operatorApp.R;
 
 import org.json.JSONArray;
@@ -68,8 +69,7 @@ public class SupplierList extends Fragment {
                     SupplierSetup fragment = new SupplierSetup();
                     FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
                     fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-                    fragmentTransaction.replace(R.id.frame, fragment, CURRENT_TAG).addToBackStack(null);
-                    fragmentTransaction.commitAllowingStateLoss();
+                    fragmentTransaction.replace(R.id.frame, fragment, CURRENT_TAG).commit();
                 }
                 else
                 {
@@ -107,7 +107,8 @@ public class SupplierList extends Fragment {
                 //First Static then Dynamic afterwards
                 //Sending static userRoleId as of now.i.e. "13" static which will later be changed to dynamic
                 BarcodeResultSend b=new BarcodeResultSend();
-                b.setUserRoleId("13");
+               // b.setUserRoleId("13");
+                b.setUserRoleId(Login.userRoleId);
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 la = restTemplate.postForObject(URL, b, String.class);
