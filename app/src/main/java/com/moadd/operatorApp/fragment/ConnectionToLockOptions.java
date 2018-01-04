@@ -1,5 +1,6 @@
 package com.moadd.operatorApp.fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -24,10 +25,14 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.client.android.CaptureActivity;
 import com.moadd.operatorApp.AppDetailsPojo;
 import com.moadd.operatorApp.BarcodeResultSend;
 import com.moadd.operatorApp.GetDateAndTime;
+import com.moadd.operatorApp.Image;
 import com.moadd.operatorApp.LockBelongsToOperatorOrNot;
 import com.moadd.operatorApp.LocksecreateCode;
 import com.moadd.operatorApp.Login;
@@ -77,6 +82,8 @@ public class ConnectionToLockOptions extends Fragment {
     LocksecreateCode l;
     public static int flag=0;
     String serialNumber;
+    SharedPreferences supplierSelected;
+    SharedPreferences.Editor et;
     public ConnectionToLockOptions() {
         // Required empty public constructor
     }
@@ -125,6 +132,8 @@ public class ConnectionToLockOptions extends Fragment {
         p2= (TextView) v.findViewById(R.id.p2);
         p3= (TextView) v.findViewById(R.id.p3);
         sp = getActivity().getSharedPreferences("Credentials", MODE_PRIVATE);
+        supplierSelected=getActivity().getSharedPreferences("Setup",MODE_PRIVATE);
+        et=supplierSelected.edit();
         transfer =  getActivity().getSharedPreferences("Setup", MODE_PRIVATE);
         hotutil = new wifiHotSpots(getActivity());
         hotutil.startHotSpot(true);
@@ -192,7 +201,8 @@ public class ConnectionToLockOptions extends Fragment {
                 LockBelongsToOperatorOrNot ap = new LockBelongsToOperatorOrNot();
                 ap.setLockBarcode(barcode.getText().toString());
                 //First Static then Dynamic afterwards
-                ap.setUserRoleId("13");
+                //ap.setUserRoleId("13");
+                ap.setUserRoleId(Login.userRoleId);
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 la = restTemplate.postForObject(URL, ap, String.class);
@@ -242,6 +252,7 @@ public class ConnectionToLockOptions extends Fragment {
                     @Override
                     public void run() {
                         // info.setText("I'm waiting here: "+ serverSocket.getLocalPort());
+                       // Toast.makeText(getActivity(), serverSocket.getInetAddress().toString(), Toast.LENGTH_SHORT).show();
                     }
                 });
                 while (true) {
@@ -306,6 +317,13 @@ public class ConnectionToLockOptions extends Fragment {
                         messageFromClient = "Problem saving Connected Supplier Details : "+messageFromClient;
                         //Here send all that data to website too
                     }
+                    else if (messageFromClient.equals("FAIL7")) {
+                        // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT";
+                        // Toast.makeText(getActivity(), "Problem saving Connected Supplier Details", Toast.LENGTH_LONG).show();
+                        messageFromClient = "Problem saving Barcode Details : "+messageFromClient;
+                        //Here send all that data to website too
+                    }
                     else if (messageFromClient.equals("FAILRESET")) {
                         // p3.setBackgroundColor(Color.parseColor("#008000"));
                         msgReply = "DISCONNECT";
@@ -334,8 +352,30 @@ public class ConnectionToLockOptions extends Fragment {
                         msgReply ="@"+transfer.getString("SuHotspot", null) + "*" + transfer.getString("SuHotpassword", null) + "*" + transfer.getString("SuPwNeeded", null);
                     }
                     else if (messageFromClient.equals("SUCCESS5")) {
-                       // p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = "!"+"1234567890*0987654321#9839381234*4321839389#7888888888*8888888887" ;
+                        // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        // msgReply = "!"+"1234567890*0987654321#9839381234*4321839389#7888888888*8888888887" ;
+                       /* msgReply="";
+                        String v= sp.getString("SelectedSuppliers","");
+                        if (!v.equals("") && v.charAt(0)=='$') {
+                            v.replaceFirst("$", "").trim();
+                            String[] arr = v.split("$");
+                            for (int i = 0; i < arr.length; i++) {
+                                msgReply = arr[i] + "*" + arr[i] + "#";
+                                //Here I have to replace SupplierList.selectedSupplierList.get(i) with App Id of that supplier
+                            }
+                        }
+                        msgReply="!"+msgReply;*/
+                        msgReply = "";
+                        String arr[] = supplierSelected.getString("SuSelectedIds", "").trim().split(" ");
+                        for (int i = 0; i < arr.length; i++) {
+                            if (msgReply.equals("")) {
+                                msgReply = msgReply + arr[i] + "*" + arr[i];
+                            } else {
+                                msgReply = msgReply + "#" + arr[i] + "*" + arr[i];
+                            }
+                        }
+                        msgReply="!"+msgReply.trim();
+
                     }
                     else if (messageFromClient.equals("SUCCESSRESET")) {
                         // p3.setBackgroundColor(Color.parseColor("#008000"));
@@ -343,8 +383,35 @@ public class ConnectionToLockOptions extends Fragment {
                     }
                     else if (messageFromClient.equals("SUCCESS6")) {
                        // p3.setBackgroundColor(Color.parseColor("#008000"));
+                        //SUCCESS6 means that the Supplier Ids that we linked with this lock was successfull so we will update the status of the lock :
+                        et.putString("LockStatus",supplierSelected.getString("LockStatus","")+"#"+"1234567890"+"-"+supplierSelected.getString("SuSelectedIds", "").trim().replaceAll(" ",",")).apply();
+                        //Sending barcode image encoded data :
+                        Bitmap bm =  BitmapFactory.decodeResource(getActivity().getResources(),
+                                R.drawable.bar);
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+                        byte[] b = baos.toByteArray();
+                        String encodedImage = Base64.encodeToString(b ,Base64.DEFAULT);
+                        msgReply="-"+encodedImage;
+                      /*  Bitmap bm =  BitmapFactory.decodeResource(getActivity().getResources(),
+                                R.drawable.bar);
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+                        byte[] b = baos.toByteArray();
+                        String encodedImage = Base64.encodeToString(b ,Base64.DEFAULT);
+                        Image m=new Image();
+                        m.setData(encodedImage);
+                        ObjectMapper mapper = new ObjectMapper();
+                        //Object to JSON in String
+                        String jsonInString = mapper.writeValueAsString(m);
+                        msgReply="-"+jsonInString;*/
+                    }
+                    else if (messageFromClient.equals("SUCCESS7")) {
+                        // p3.setBackgroundColor(Color.parseColor("#008000"));
                         msgReply = "DISCONNECT";
-                      //  Toast.makeText(getActivity(), "Successfull Data Transfer Complete", Toast.LENGTH_LONG).show();
+                        messageFromClient= "Successfull Data Transfer Complete.";
+
+                        //  Toast.makeText(getActivity(), "Successfull Data Transfer Complete", Toast.LENGTH_LONG).show();
                         //Here send all that data to website too
                     }
                         //Toast.makeText(getActivity(), "Error in connection",Toast.LENGTH_LONG).show();
@@ -379,17 +446,18 @@ public class ConnectionToLockOptions extends Fragment {
 
                         @Override
                         public void run() {
+                            //Toast.makeText(getActivity(),serverSocket.getInetAddress().toString(),Toast.LENGTH_SHORT).show();
                             Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
                             if (message.contains("SUCCESS1"))
                             {
                                 p1.setBackgroundColor(Color.parseColor("#008000"));
                             }
-                            if (message.contains("SUCCESS5"))
+                            if (message.contains("SUCCESS6"))
                             {
                                 p2.setBackgroundColor(Color.parseColor("#008000"));
 
                             }
-                            if (message.contains("SUCCESS6"))
+                            if (message.contains("Successfull Data Transfer Complete."))
                             {
                                 p3.setBackgroundColor(Color.parseColor("#008000"));
 
@@ -399,12 +467,12 @@ public class ConnectionToLockOptions extends Fragment {
                                 p1.setBackgroundColor(Color.parseColor("#FF0000"));
 
                             }
-                            if (message.contains("FAIL5"))
+                            if (message.contains("FAIL6"))
                             {
                                 p2.setBackgroundColor(Color.parseColor("#FF0000"));
 
                             }
-                            if (message.contains("FAIL6"))
+                            if (message.contains("FAIL7"))
                             {
                                 p3.setBackgroundColor(Color.parseColor("#FF0000"));
 

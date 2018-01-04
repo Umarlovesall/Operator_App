@@ -11,7 +11,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center_vertical"
-        android:text="   Select Suppliers Supplier List : (Maximum 4)" />
+        android:text="   Select Suppliers from Supplier List : (Maximum 3)" />
     <ListView
         android:id="@+id/lv"
         android:layout_width="match_parent"
@@ -22,7 +22,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center_vertical"
-        android:text="   Selected Suppliers  :(Click on Supplier to Remove from list) " />
+        android:text="   Selected Suppliers  : (Click on Supplier to remove) " />
     <ListView
         android:id="@+id/lvSelected"
         android:layout_width="match_parent"

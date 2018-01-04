@@ -1,6 +1,8 @@
 package com.moadd.operatorApp.fragment;
 
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -41,6 +43,8 @@ public class SupplierList extends Fragment {
     ArrayAdapter<String> aa,selectedAA;
     public static String sup;
     Button proceed;
+    SharedPreferences sp;
+    SharedPreferences.Editor et;
     public SupplierList() {
         // Required empty public constructor
     }
@@ -52,6 +56,8 @@ public class SupplierList extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_supplier_list, container, false);
         proceed= (Button) v.findViewById(R.id.proceed);
+        sp=getActivity().getSharedPreferences("SelecetedSuppliers", Context.MODE_PRIVATE);
+        et=sp.edit();
         SupplierList = (ListView) v.findViewById(R.id.lv);
         selectedSuppliers = (ListView) v.findViewById(R.id.lvSelected);
         selectedSuppliersList=new ArrayList<String>();
@@ -80,8 +86,10 @@ public class SupplierList extends Fragment {
         SupplierList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-             selectedSuppliersList.add(listSupplier.get(position));
-             selectedAA.notifyDataSetChanged();
+                String [] ar=listSupplier.get(position).split("  ");
+                selectedSuppliersList.add(ar[1]);
+               et.putString("SelectedSuppliers",sp.getString("SelectedSuppliers","")+"$"+ar[1]).apply();
+                selectedAA.notifyDataSetChanged();
             }
         });
         selectedSuppliers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -102,12 +110,12 @@ public class SupplierList extends Fragment {
         public String doInBackground(Void... params) {
             try {
                 //The link on which we have to POST data and in return it will return some data
-               String URL = "https://www.moaddi.com/moaddi/operator/serviesOperatorSupplierDetails.htm";
-               // String URL = "https:// 192.168.0.104:8081/Moaddi1/operator/serviesOperatorSupplierDetails.htm";
+                String URL = "https://www.moaddi.com/moaddi/operator/serviesOperatorSupplierDetails.htm";
+                // String URL = "https:// 192.168.0.104:8081/Moaddi1/operator/serviesOperatorSupplierDetails.htm";
                 //First Static then Dynamic afterwards
                 //Sending static userRoleId as of now.i.e. "13" static which will later be changed to dynamic
                 BarcodeResultSend b=new BarcodeResultSend();
-               // b.setUserRoleId("13");
+                // b.setUserRoleId("13");
                 b.setUserRoleId(Login.userRoleId);
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
@@ -127,6 +135,7 @@ public class SupplierList extends Fragment {
                     for (int i = 0; i < j.length(); i++) {
                         JSONObject l = j.getJSONObject(i);
                         listSupplier.add(l.getString("fullName") + "  " + l.getString("userId"));
+                        //listSupplier.add(l.getString("userId"));
                     }
                     aa.notifyDataSetChanged();
                 } catch (JSONException e) {
