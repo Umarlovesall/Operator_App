@@ -87,8 +87,10 @@ public class SupplierList extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String [] ar=listSupplier.get(position).split("  ");
-                selectedSuppliersList.add(ar[1]);
-               et.putString("SelectedSuppliers",sp.getString("SelectedSuppliers","")+"$"+ar[1]).apply();
+                if (!selectedSuppliersList.contains(ar[1])) {
+                    selectedSuppliersList.add(ar[1]);
+                    et.putString("SelectedSuppliers", sp.getString("SelectedSuppliers", "") + "$" + ar[1]).apply();
+                }
                 selectedAA.notifyDataSetChanged();
             }
         });
