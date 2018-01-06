@@ -70,16 +70,19 @@ public class SupplierList extends Fragment {
         proceed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (selectedSuppliersList.size()<=3)
-                {
-                    SupplierSetup fragment = new SupplierSetup();
-                    FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-                    fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-                    fragmentTransaction.replace(R.id.frame, fragment, CURRENT_TAG).commit();
+                if (selectedSuppliersList.size()!=0) {
+                    if (selectedSuppliersList.size() <= 3) {
+                        SupplierSetup fragment = new SupplierSetup();
+                        FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+                        fragmentTransaction.replace(R.id.frame, fragment, CURRENT_TAG).commit();
+                    } else {
+                        Toast.makeText(getActivity(), "Select Maximum 3 Suppliers Only", Toast.LENGTH_LONG).show();
+                    }
                 }
                 else
                 {
-                    Toast.makeText(getActivity(),"Select Maximum 3 Suppliers Only",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "Select at least 1 Suppliers", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -112,12 +115,14 @@ public class SupplierList extends Fragment {
         public String doInBackground(Void... params) {
             try {
                 //The link on which we have to POST data and in return it will return some data
-                String URL = "https://www.moaddi.com/moaddi/operator/serviesOperatorSupplierDetails.htm";
-                // String URL = "https:// 192.168.0.104:8081/Moaddi1/operator/serviesOperatorSupplierDetails.htm";
+                //(For all suppliers of the operator)String URL = "https://www.moaddi.com/moaddi/operator/serviesOperatorSupplierDetails.htm";
+                //(For Suppliers having activated apps)String URL = "https://www.moaddi.com/moaddi/operator/serviesOperatorSupplierDetails1.htm";
+                // String URL = "http://192.168.0.102:8080/Moaddi1/operator/serviesOperatorSupplierDetails1.htm";
+                String URL = "https://www.moaddi.com/moaddi/operator/serviesOperatorSupplierDetails1.htm";
                 //First Static then Dynamic afterwards
                 //Sending static userRoleId as of now.i.e. "13" static which will later be changed to dynamic
                 BarcodeResultSend b=new BarcodeResultSend();
-                // b.setUserRoleId("13");
+                 //b.setUserRoleId("13");
                 b.setUserRoleId(Login.userRoleId);
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
