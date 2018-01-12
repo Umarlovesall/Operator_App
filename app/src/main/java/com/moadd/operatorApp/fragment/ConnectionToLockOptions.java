@@ -37,6 +37,7 @@ import com.moadd.operatorApp.LockBelongsToOperatorOrNot;
 import com.moadd.operatorApp.LocksecreateCode;
 import com.moadd.operatorApp.Login;
 import com.moadd.operatorApp.MainActivity;
+import com.moadd.operatorApp.OperatorLockSetupDetails;
 import com.moadd.operatorApp.wifiHotSpots;
 import com.moaddi.operatorApp.R;
 
@@ -67,6 +68,7 @@ import static com.moadd.operatorApp.fragment.HomeFragment.typeOfData;
 public class ConnectionToLockOptions extends Fragment {
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 0;
     Button bar,add;
+    String toSendToServer="";
     TextView p1,p2,p3;
     ListView lv;
     ArrayAdapter<String> aa;
@@ -81,9 +83,11 @@ public class ConnectionToLockOptions extends Fragment {
     String msgReply;
     LocksecreateCode l;
     public static int flag=0;
-    String serialNumber;
+    String serialNumber,lastMessage="";
     SharedPreferences supplierSelected;
     SharedPreferences.Editor et;
+    OperatorLockSetupDetails lsd;
+    int length;
     public ConnectionToLockOptions() {
         // Required empty public constructor
     }
@@ -131,23 +135,36 @@ public class ConnectionToLockOptions extends Fragment {
         p1= (TextView) v.findViewById(R.id.p1);
         p2= (TextView) v.findViewById(R.id.p2);
         p3= (TextView) v.findViewById(R.id.p3);
+        lsd=new OperatorLockSetupDetails();
         sp = getActivity().getSharedPreferences("Credentials", MODE_PRIVATE);
         supplierSelected=getActivity().getSharedPreferences("Setup",MODE_PRIVATE);
         et=supplierSelected.edit();
         transfer =  getActivity().getSharedPreferences("Setup", MODE_PRIVATE);
         hotutil = new wifiHotSpots(getActivity());
-        hotutil.startHotSpot(true);
+        //hotutil.startHotSpot(true);
         Thread socketServerThread = new Thread(new SocketServerThread());
         socketServerThread.start();
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                al.clear();
+                aa.notifyDataSetChanged();
+                p1.setBackgroundColor(Color.parseColor("#ffffff"));
+                p2.setBackgroundColor(Color.parseColor("#ffffff"));
+                p3.setBackgroundColor(Color.parseColor("#ffffff"));
+            }
+        });
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!barcode.getText().toString().trim().equals("")) {
+                if ( barcode.getText().toString().trim().equals("A020A605EBF3") && al.size()==0) {
                     //new HttpRequestTask().execute();
-                    al.add("1234567890");
+                    al.add("A020A605EBF3");
                     aa.notifyDataSetChanged();
+                    hotutil.startHotSpot(true);
+                    toSendToServer="";
                 } else {
-                    Toast.makeText(getActivity(), "Enter Some Barcode First", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "Enter Some Barcode/Serial Number First", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -315,6 +332,9 @@ public class ConnectionToLockOptions extends Fragment {
                         msgReply = "DISCONNECT";
                        // Toast.makeText(getActivity(), "Problem saving Connected Supplier Details", Toast.LENGTH_LONG).show();
                         messageFromClient = "Problem saving Connected Supplier Details : "+messageFromClient;
+                        et.putString("LockFailHistory",supplierSelected.getString("LockFailHistory","")+"#"+al.get(0)).apply();
+                       /* al.remove(0);
+                        aa.notifyDataSetChanged();*/
                         //Here send all that data to website too
                     }
                     else if (messageFromClient.equals("FAIL7")) {
@@ -338,22 +358,34 @@ public class ConnectionToLockOptions extends Fragment {
                         } else if (typeOfData == 2) {
                             msgReply = "RESET";
                         }
+                        //toSendToServer=toSendToServer+msgReply+",";
+                        lsd.setTimeAndLimit(msgReply);
+                        lastMessage=messageFromClient;
                     }
                     else if (messageFromClient.equals("SUCCESS2")) {
                         //p3.setBackgroundColor(Color.parseColor("#008000"));
                         msgReply ="%"+sp.getString("userId","")+"*"+sp.getString("appId","") ;
+                        //toSendToServer=toSendToServer+msgReply+",";
+                        lsd.setUserIDandAppId(msgReply);
+                        lastMessage=messageFromClient;
                     }
                     else if (messageFromClient.equals("SUCCESS3")) {
                        // p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply = "$"+transfer.getString("OpHotspot", null) + "*" + transfer.getString("OpHotpassword", null) + "*" + transfer.getString("OpPwNeeded", null)  ;
+                        msgReply = "$"+transfer.getString("OpHotspot", null) + "*" + transfer.getString("OpHotpassword", "");
+                        //toSendToServer=toSendToServer+msgReply+",";
+                        lsd.setOpSetup(msgReply);
+                        lastMessage=messageFromClient;
                     }
                     else if (messageFromClient.equals("SUCCESS4")) {
                        // p3.setBackgroundColor(Color.parseColor("#008000"));
-                        msgReply ="@"+transfer.getString("SuHotspot", null) + "*" + transfer.getString("SuHotpassword", null) + "*" + transfer.getString("SuPwNeeded", null);
+                       // msgReply ="@"+transfer.getString("SuHotspot", null) + "*" + transfer.getString("SuHotpassword", null) + "*" + transfer.getString("SuPwNeeded", null);
+                        msgReply ="@"+transfer.getString("SuHotspot", null) + "*" + transfer.getString("SuHotpassword", "") ;
+                        //toSendToServer=toSendToServer+msgReply+",";
+                        lsd.setSupSetup(msgReply);
+                        lastMessage=messageFromClient;
                     }
                     else if (messageFromClient.equals("SUCCESS5")) {
-                        // p3.setBackgroundColor(Color.parseColor("#008000"));
-                        // msgReply = "!"+"1234567890*0987654321#9839381234*4321839389#7888888888*8888888887" ;
+                         // msgReply = "!"+"1234567890*0987654321#9839381234*4321839389#7888888888*8888888887" ;
                        /* msgReply="";
                         String v= sp.getString("SelectedSuppliers","");
                         if (!v.equals("") && v.charAt(0)=='$') {
@@ -375,24 +407,35 @@ public class ConnectionToLockOptions extends Fragment {
                             }
                         }
                         msgReply="!"+msgReply.trim();
-
+                        //toSendToServer=toSendToServer+msgReply+",";
+                        lsd.setConnectedSuppIds(msgReply);
+                        lastMessage=messageFromClient;
                     }
                     else if (messageFromClient.equals("SUCCESSRESET")) {
                         // p3.setBackgroundColor(Color.parseColor("#008000"));
                         msgReply = "DISCONNECT" ;
+                        hotutil.startHotSpot(false);
+                        lastMessage=messageFromClient;
+                        /*al.remove(0);
+                        aa.notifyDataSetChanged();*/
                     }
                     else if (messageFromClient.equals("SUCCESS6")) {
                        // p3.setBackgroundColor(Color.parseColor("#008000"));
                         //SUCCESS6 means that the Supplier Ids that we linked with this lock was successfull so we will update the status of the lock :
-                        et.putString("LockStatus",supplierSelected.getString("LockStatus","")+"#"+"1234567890"+"-"+supplierSelected.getString("SuSelectedIds", "").trim().replaceAll(" ",",")).apply();
+                        et.putString("LockStatus",supplierSelected.getString("LockStatus","")+"#"+"A020A605EBF3"+"-"+supplierSelected.getString("SuSelectedIds", "").trim().replaceAll(" ",",")).apply();
                         //Sending barcode image encoded data :
                         Bitmap bm =  BitmapFactory.decodeResource(getActivity().getResources(),
-                                R.drawable.bar);
+                                R.drawable.barcodestatic);
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
                         byte[] b = baos.toByteArray();
+                        /*StringBuilder sb=new StringBuilder();
+                        sb.append(b);*/
                         String encodedImage = Base64.encodeToString(b ,Base64.DEFAULT);
-                        msgReply="-"+encodedImage;
+                        //msgReply="-"+encodedImage;
+                        msgReply="-"+"Encoded Image";
+                        //length=encodedImage.length();
+                        lastMessage=messageFromClient;
                       /*  Bitmap bm =  BitmapFactory.decodeResource(getActivity().getResources(),
                                 R.drawable.bar);
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -410,20 +453,26 @@ public class ConnectionToLockOptions extends Fragment {
                         // p3.setBackgroundColor(Color.parseColor("#008000"));
                         msgReply = "DISCONNECT";
                         messageFromClient= "Successfull Data Transfer Complete.";
-
+                        hotutil.startHotSpot(false);
                         //  Toast.makeText(getActivity(), "Successfull Data Transfer Complete", Toast.LENGTH_LONG).show();
+                        et.putString("LockSuccessHistory",supplierSelected.getString("LockSuccessHistory","")+"#"+al.get(0)).apply();
                         //Here send all that data to website too
+                       // new HttpRequestTask3().execute();
+                        lastMessage=messageFromClient;
                     }
                         //Toast.makeText(getActivity(), "Error in connection",Toast.LENGTH_LONG).show();
                         //Send serial number to the website and based on response(Barcode image and barcode setup status of the lock),send details to the lock
                        //else if (messageFromClient.equals(al.get(al.size()-1)))
-                    else if(messageFromClient.equals("1234567890"))
+                    else if(messageFromClient.equals("A020A605EBF3"))
                         {
                            /* l.setLockSnoNew(messageFromClient);
                             new HttpRequestTask1().execute();
                             p1.setBackgroundColor(Color.parseColor("#008000"));*/
+                           //toSendToServer=toSendToServer+messageFromClient+",";
                            serialNumber=messageFromClient;
                             msgReply = "9839386601";
+                            lsd.setLockSno(messageFromClient);
+                            lastMessage=messageFromClient;
                            // p1.setBackgroundColor(Color.parseColor("#008000"));
                         }
                     /*else if (messageFromClient.contains("FAIL"))
@@ -441,41 +490,65 @@ public class ConnectionToLockOptions extends Fragment {
                     message += "#" + count + " from " + socket.getInetAddress()
                             + ":" + socket.getPort() + "\n"
                             + "Message from client: " + messageFromClient + "\n";
-
                     getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
                             //Toast.makeText(getActivity(),serverSocket.getInetAddress().toString(),Toast.LENGTH_SHORT).show();
                             Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
-                            if (message.contains("SUCCESS1"))
+                            if (lastMessage.contains("SUCCESS1"))
                             {
                                 p1.setBackgroundColor(Color.parseColor("#008000"));
                             }
-                            if (message.contains("SUCCESS6"))
+                            if (lastMessage.equals("SUCCESS6"))
                             {
                                 p2.setBackgroundColor(Color.parseColor("#008000"));
 
                             }
-                            if (message.contains("Successfull Data Transfer Complete."))
+                            if (lastMessage.equals("Successfull Data Transfer Complete."))
                             {
                                 p3.setBackgroundColor(Color.parseColor("#008000"));
+                                al.remove(0);
+                                aa.notifyDataSetChanged();
+                                p1.setBackgroundColor(Color.parseColor("#ffffff"));
+                                p2.setBackgroundColor(Color.parseColor("#ffffff"));
+                                p3.setBackgroundColor(Color.parseColor("#ffffff"));
+                                new HttpRequestTask3().execute();
 
                             }
-                            if (message.contains("FAIL1"))
+                            if (lastMessage.equals("FAIL1"))
                             {
                                 p1.setBackgroundColor(Color.parseColor("#FF0000"));
 
                             }
-                            if (message.contains("FAIL6"))
+                            if (lastMessage.equals("FAIL6"))
                             {
                                 p2.setBackgroundColor(Color.parseColor("#FF0000"));
 
                             }
-                            if (message.contains("FAIL7"))
+                            if (lastMessage.equals("FAIL7"))
                             {
                                 p3.setBackgroundColor(Color.parseColor("#FF0000"));
+                                al.remove(0);
+                                aa.notifyDataSetChanged();
+                            }
+                            if (lastMessage.equals("SUCCESSRESET"))
+                            {
+                                p1.setBackgroundColor(Color.parseColor("#008000"));
+                                p2.setBackgroundColor(Color.parseColor("#008000"));
+                                p3.setBackgroundColor(Color.parseColor("#008000"));
+                                p1.setBackgroundColor(Color.parseColor("#ffffff"));
+                                p2.setBackgroundColor(Color.parseColor("#ffffff"));
+                                p3.setBackgroundColor(Color.parseColor("#ffffff"));
 
+                            }
+                            if (lastMessage.equals("FAILRESET"))
+                            {
+                                al.remove(0);
+                                aa.notifyDataSetChanged();
+                                p1.setBackgroundColor(Color.parseColor("#FF0000"));
+                                p2.setBackgroundColor(Color.parseColor("#FF0000"));
+                                p3.setBackgroundColor(Color.parseColor("#FF0000"));
                             }
                         }
                     });
@@ -600,6 +673,32 @@ public class ConnectionToLockOptions extends Fragment {
             {
                 msgReply="";
             }
+        }
+    }
+    private class HttpRequestTask3 extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... params) {
+            try {
+                //The link on which we have to POST data and in return it will return some data
+                 String URL = "http://192.168.0.109:8080/Moaddi1/operator/serviesoperatorlocksetupdetails.htm";
+               // String URL = "https://www.moaddi.com/moaddi/operator/serviesoperatorlocksetupdetails.htm";
+                //Use RestTemplate to POST(within Asynctask)
+                RestTemplate restTemplate = new RestTemplate();
+                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+
+                //postforobject method POSTs data to server and brings back LoginForm object format data.
+                String lf = restTemplate.postForObject(URL, lsd, String.class);
+                return lf;
+            } catch (Exception e) {
+                Log.e("MainActivity", e.getMessage(), e);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String lf) {
+            Toast.makeText(getActivity(),lf,Toast.LENGTH_SHORT).show();
         }
     }
 }
