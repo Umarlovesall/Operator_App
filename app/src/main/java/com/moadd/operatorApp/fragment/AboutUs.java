@@ -27,7 +27,7 @@ WebView wv;
         // Inflate the layout for this fragment
         View v= inflater.inflate(R.layout.fragment_policy, container, false);
         wv= (WebView) v.findViewById(R.id.wv);
-        wv.loadUrl("http://www.moaddi.info/");
+        wv.loadUrl("https://www.moaddi.com/showaboutus.htm");
         return v;
     }
 

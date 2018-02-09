@@ -31,7 +31,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 
-import static com.moadd.operatorApp.MainActivity.CURRENT_TAG;
+import static com.moadd.operatorApp.NewActivity.CURRENT_TAG;
 
 
 /**
@@ -39,7 +39,7 @@ import static com.moadd.operatorApp.MainActivity.CURRENT_TAG;
  */
 public class SupplierList extends Fragment {
     ListView SupplierList,selectedSuppliers;
-    public static ArrayList<String> listSupplier,selectedSuppliersList;
+    public static ArrayList<String> listSupplier,selectedSuppliersList,appIDs,selectedAppIDs;
     ArrayAdapter<String> aa,selectedAA;
     public static String sup;
     Button proceed;
@@ -62,8 +62,11 @@ public class SupplierList extends Fragment {
         selectedSuppliers = (ListView) v.findViewById(R.id.lvSelected);
         selectedSuppliersList=new ArrayList<String>();
         listSupplier = new ArrayList<String>();
-        aa = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, listSupplier);
-        selectedAA = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, selectedSuppliersList);
+        appIDs = new ArrayList<String>();
+        selectedAppIDs = new ArrayList<String>();
+        et.clear().apply();
+        aa = new ArrayAdapter<String>(getActivity(), R.layout.list_text_white, listSupplier);
+        selectedAA = new ArrayAdapter<String>(getActivity(), R.layout.list_text_white, selectedSuppliersList);
         SupplierList.setAdapter(aa);
         selectedSuppliers.setAdapter(selectedAA);
         new HttpRequestTask().execute();
@@ -73,9 +76,10 @@ public class SupplierList extends Fragment {
                 if (selectedSuppliersList.size()!=0) {
                     if (selectedSuppliersList.size() <= 3) {
                         SupplierSetup fragment = new SupplierSetup();
-                        FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-                        fragmentTransaction.replace(R.id.frame, fragment, CURRENT_TAG).commit();
+                        FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+                        ft.replace(R.id.frame, fragment);
+                        ft.addToBackStack(null);
+                        ft.commit();
                     } else {
                         Toast.makeText(getActivity(), "Select Maximum 3 Suppliers Only", Toast.LENGTH_LONG).show();
                     }
@@ -92,7 +96,9 @@ public class SupplierList extends Fragment {
                 String [] ar=listSupplier.get(position).split("  ");
                 if (!selectedSuppliersList.contains(ar[1])) {
                     selectedSuppliersList.add(ar[1]);
-                    et.putString("SelectedSuppliers", sp.getString("SelectedSuppliers", "") + "$" + ar[1]).apply();
+                   // et.putString("SelectedSuppliers", sp.getString("SelectedSuppliers", "") + "$" + ar[1]).apply();
+                    et.putString("SelectedSuppliers", sp.getString("SelectedSuppliers", "") + "$" + ar[1]+"*"+appIDs.get(position)).apply();
+                    selectedAppIDs.add(appIDs.get(position));
                 }
                 selectedAA.notifyDataSetChanged();
             }
@@ -117,7 +123,7 @@ public class SupplierList extends Fragment {
                 //The link on which we have to POST data and in return it will return some data
                 //(For all suppliers of the operator)String URL = "https://www.moaddi.com/moaddi/operator/serviesOperatorSupplierDetails.htm";
                 //(For Suppliers having activated apps)String URL = "https://www.moaddi.com/moaddi/operator/serviesOperatorSupplierDetails1.htm";
-                // String URL = "http://192.168.0.102:8080/Moaddi1/operator/serviesOperatorSupplierDetails1.htm";
+                // String URL = "http://192.168.0.115:8080/Moaddi1/operator/serviesOperatorSupplierDetails1.htm";
                 String URL = "https://www.moaddi.com/moaddi/operator/serviesOperatorSupplierDetails1.htm";
                 //First Static then Dynamic afterwards
                 //Sending static userRoleId as of now.i.e. "13" static which will later be changed to dynamic
@@ -142,12 +148,14 @@ public class SupplierList extends Fragment {
                     for (int i = 0; i < j.length(); i++) {
                         JSONObject l = j.getJSONObject(i);
                         listSupplier.add(l.getString("fullName") + "  " + l.getString("userId"));
+                        appIDs.add(l.getString("appId"));
                         //listSupplier.add(l.getString("userId"));
                     }
                     aa.notifyDataSetChanged();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                Toast.makeText(getActivity(),m,Toast.LENGTH_LONG).show();
             }
             else
             {
