@@ -133,7 +133,7 @@ public class ConnectionToLockOptions extends Fragment {
         lv = (ListView) v.findViewById(R.id.lv);
         al = new ArrayList<String>();
         readLockDetails=new ArrayList<ReadLockDetails>();
-       // aa = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, al);
+        // aa = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, al);
         aa=new ArrayAdapter<String>(getActivity(),R.layout.list_text_white,al);
         lv.setAdapter(aa);
         l=new LocksecreateCode();
@@ -526,6 +526,18 @@ public class ConnectionToLockOptions extends Fragment {
                         // new HttpRequestTask3().execute();
                         lastMessage=messageFromClient;
                     }
+                    else if (messageFromClient.equals("Operator Setup Already Done.")) {
+                        // p7.setBackgroundColor(Color.parseColor("#008000"));
+                        msgReply = "DISCONNECT";
+                        messageFromClient= "First reset the lock data in order to make a new setup for operator and his suppliers.";
+                        hotutil.startHotSpot(false);
+                        //  Toast.makeText(getActivity(), "Successfull Data Transfer Complete", Toast.LENGTH_LONG).show();
+                        // et.putString("LockSuccessHistory",supplierSelected.getString("LockSuccessHistory","")+"#"+al.get(positionInAction)+"$on$"+GetDateAndTime.timeStamp().replace("*","$at$")).apply();
+                        et.putString("LockFailHistory",supplierSelected.getString("LockFailHistory","")+"#"+al.get(positionInAction)).apply();
+                        //Here send all that data to website too
+                        // new HttpRequestTask3().execute();
+                        lastMessage=messageFromClient;
+                    }
                     //Toast.makeText(getActivity(), "Error in connection",Toast.LENGTH_LONG).show();
                     //Send serial number to the website and based on response(Barcode image and barcode setup status of the lock),send details to the lock
                     //else if (messageFromClient.equals(al.get(al.size()-1)))
@@ -540,6 +552,7 @@ public class ConnectionToLockOptions extends Fragment {
                         serialNumber=messageFromClient;
                         //msgReply = "9839386601";
                         msgReply=readLockDetails.get(positionInAction).getSecretNo();
+                        //msgReply=AllLocks.alSecretNo.get(AllLocks.al.indexOf(messageFromClient));
                         lsd.setLockSno(messageFromClient);
                         lastMessage=messageFromClient;
                         // p1.setBackgroundColor(Color.parseColor("#008000"));
@@ -564,7 +577,7 @@ public class ConnectionToLockOptions extends Fragment {
                         @Override
                         public void run() {
                             //Toast.makeText(getActivity(),serverSocket.getInetAddress().toString(),Toast.LENGTH_SHORT).show();
-                           // Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+                            // Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
                             if (al.contains(lockInAction))
                             {
                                 progress.setText("Lock "+lockInAction+" is in progress.");
@@ -612,13 +625,13 @@ public class ConnectionToLockOptions extends Fragment {
                                     }
                                     hotutil.startHotSpot(false);
                                 }
-                                p1.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p2.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p3.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p4.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p5.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p6.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p7.setBackgroundColor(Color.parseColor("#ffffff"));
+                                p1.setBackgroundResource(R.drawable.textview_border);
+                                p2.setBackgroundResource(R.drawable.textview_border);
+                                p3.setBackgroundResource(R.drawable.textview_border);
+                                p4.setBackgroundResource(R.drawable.textview_border);
+                                p5.setBackgroundResource(R.drawable.textview_border);
+                                p6.setBackgroundResource(R.drawable.textview_border);
+                                p7.setBackgroundResource(R.drawable.textview_border);
                                 progress.setText("Lock "+lockInAction+" is done.");
                                 new HttpRequestTask3().execute();
 
@@ -659,6 +672,7 @@ public class ConnectionToLockOptions extends Fragment {
                             }
                             if (lastMessage.equals("SUCCESSRESET"))
                             {
+                                Toast.makeText(getActivity(),"Lock Reset Successfull",Toast.LENGTH_SHORT).show();
                                 p1.setBackgroundColor(Color.parseColor("#008000"));
                                 p2.setBackgroundColor(Color.parseColor("#008000"));
                                 p3.setBackgroundColor(Color.parseColor("#008000"));
@@ -666,15 +680,15 @@ public class ConnectionToLockOptions extends Fragment {
                                 p5.setBackgroundColor(Color.parseColor("#008000"));
                                 p6.setBackgroundColor(Color.parseColor("#008000"));
                                 p7.setBackgroundColor(Color.parseColor("#008000"));
-                                p1.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p2.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p3.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p4.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p5.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p6.setBackgroundColor(Color.parseColor("#ffffff"));
-                                p7.setBackgroundColor(Color.parseColor("#ffffff"));
+                                p1.setBackgroundResource(R.drawable.textview_border);
+                                p2.setBackgroundResource(R.drawable.textview_border);
+                                p3.setBackgroundResource(R.drawable.textview_border);
+                                p4.setBackgroundResource(R.drawable.textview_border);
+                                p5.setBackgroundResource(R.drawable.textview_border);
+                                p6.setBackgroundResource(R.drawable.textview_border);
+                                p7.setBackgroundResource(R.drawable.textview_border);
                                 progress.setText("Lock "+lockInAction+" is reset.");
-                          readLockDetails.remove(al.indexOf(lockInAction));
+                                readLockDetails.remove(al.indexOf(lockInAction));
                                 al.remove(lockInAction);
                                 aa.notifyDataSetChanged();
                                 if (al.size()==0)
@@ -847,7 +861,7 @@ public class ConnectionToLockOptions extends Fragment {
 
         @Override
         protected void onPostExecute(String lf) {
-          //  Toast.makeText(getActivity(),lf,Toast.LENGTH_SHORT).show();
+            //  Toast.makeText(getActivity(),lf,Toast.LENGTH_SHORT).show();
             if (lf!=null)
             {
                 //w  xd.clear().apply();
@@ -858,15 +872,15 @@ public class ConnectionToLockOptions extends Fragment {
         // String a=null;
         ReadLockDetails la=null;
         @Override
-        public  ReadLockDetails doInBackground(Void... params) {
+        public ReadLockDetails doInBackground(Void... params) {
             try {
                 //The link on which we have to POST data and in return it will return some data
                 String URL = "https://www.moaddi.com/moaddi/operator/lockdetails.htm";
-                //String URL = "http://192.168.0.109:8081/Moaddi2/operator/lockdetails.htm";
+                //String URL = "http://192.168.0.106:8082/webservices/operator/lockdetails.htm";
                 ForLockBelonging fl=new ForLockBelonging();
                 fl.setLockSno(barcode.getText().toString().trim());
                 fl.setUserRoleId(Login.userRoleId);
-                //fl.setUserRoleId("13");
+                //fl.setUserRoleId("90");
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 la = restTemplate.postForObject(URL,fl,ReadLockDetails.class);
