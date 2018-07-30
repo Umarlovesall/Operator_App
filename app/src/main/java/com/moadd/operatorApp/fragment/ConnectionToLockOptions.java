@@ -175,13 +175,13 @@ public class ConnectionToLockOptions extends Fragment {
                         }
                     }
                 }
-                p1.setBackgroundColor(Color.parseColor("#ffffff"));
-                p2.setBackgroundColor(Color.parseColor("#ffffff"));
-                p3.setBackgroundColor(Color.parseColor("#ffffff"));
-                p4.setBackgroundColor(Color.parseColor("#ffffff"));
-                p5.setBackgroundColor(Color.parseColor("#ffffff"));
-                p6.setBackgroundColor(Color.parseColor("#ffffff"));
-                p7.setBackgroundColor(Color.parseColor("#ffffff"));
+                p1.setBackgroundResource(R.drawable.textview_border);
+                p2.setBackgroundResource(R.drawable.textview_border);
+                p3.setBackgroundResource(R.drawable.textview_border);
+                p4.setBackgroundResource(R.drawable.textview_border);
+                p5.setBackgroundResource(R.drawable.textview_border);
+                p6.setBackgroundResource(R.drawable.textview_border);
+                p7.setBackgroundResource(R.drawable.textview_border);
             }
         });
         barcode.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -499,7 +499,8 @@ public class ConnectionToLockOptions extends Fragment {
                         encodedImage = Base64.encodeToString(b ,Base64.DEFAULT);
                         //msgReply="-"+encodedImage;
                         // msgReply="-"+readLockDetails.get(positionInAction).getBarcodeEncoded();
-                        msgReply="-"+readLockDetails.get(positionInAction).getBarcode();
+                        //msgReply="-"+readLockDetails.get(positionInAction).getBarcode();
+                        msgReply="-"+"BARCODE";
                         //length=encodedImage.length();
                         lastMessage=messageFromClient;
                       /*  Bitmap bm =  BitmapFactory.decodeResource(getActivity().getResources(),
@@ -565,6 +566,7 @@ public class ConnectionToLockOptions extends Fragment {
                     {
                         //p1.setBackgroundColor(Color.parseColor("#FF0000"));
                         msgReply="DISCONNECT";
+                        lastMessage=messageFromClient;
                         //Toast.makeText(getActivity(), "Unexpected response from the lock! Try again", Toast.LENGTH_LONG).show();
                     }
 
@@ -577,7 +579,7 @@ public class ConnectionToLockOptions extends Fragment {
                         @Override
                         public void run() {
                             //Toast.makeText(getActivity(),serverSocket.getInetAddress().toString(),Toast.LENGTH_SHORT).show();
-                            // Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+                           // Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
                             if (al.contains(lockInAction))
                             {
                                 progress.setText("Lock "+lockInAction+" is in progress.");
@@ -606,6 +608,35 @@ public class ConnectionToLockOptions extends Fragment {
                             {
                                 p6.setBackgroundColor(Color.parseColor("#008000"));
 
+                            }
+                            if (lastMessage.equals("First reset the lock data in order to make a new setup for operator and his suppliers."))
+                            {
+                                p7.setBackgroundColor(Color.parseColor("#008000"));
+                                //al.remove(positionInAction);
+                                al.remove(0);
+                                readLockDetails.remove(positionInAction);
+                                aa.notifyDataSetChanged();
+                                if (al.size()==0)
+                                {
+                                    if (serverSocket != null) {
+                                        try {
+                                            serverSocket.close();
+                                        } catch (IOException e) {
+                                            // TODO Auto-generated catch block
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                    hotutil.startHotSpot(false);
+                                }
+                                p1.setBackgroundResource(R.drawable.textview_border);
+                                p2.setBackgroundResource(R.drawable.textview_border);
+                                p3.setBackgroundResource(R.drawable.textview_border);
+                                p4.setBackgroundResource(R.drawable.textview_border);
+                                p5.setBackgroundResource(R.drawable.textview_border);
+                                p6.setBackgroundResource(R.drawable.textview_border);
+                                p7.setBackgroundResource(R.drawable.textview_border);
+                                progress.setText("Lock "+lockInAction+" already has a setup.");
+                                Toast.makeText(getActivity(), "Lock "+lockInAction+" already has a setup.", Toast.LENGTH_SHORT).show();
                             }
                             if (lastMessage.equals("Successfull Data Transfer Complete."))
                             {
@@ -639,6 +670,7 @@ public class ConnectionToLockOptions extends Fragment {
                             if (lastMessage.equals("FAIL1"))
                             {
                                 p1.setBackgroundColor(Color.parseColor("#FF0000"));
+
 
                             }
                             if (lastMessage.equals("FAIL2"))
@@ -866,6 +898,11 @@ public class ConnectionToLockOptions extends Fragment {
             {
                 //w  xd.clear().apply();
             }
+           /* ConnectionToLockOptions fragment = new ConnectionToLockOptions();
+            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.frame, fragment);
+            //ft.addToBackStack(null);
+            ft.commit();*/
         }
     }
     private class HttpRequestTask4 extends AsyncTask<Void, Void,ReadLockDetails> {
