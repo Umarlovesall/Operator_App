@@ -720,8 +720,8 @@ public class ConnectionToLockOptions extends Fragment {
                                 p6.setBackgroundResource(R.drawable.textview_border);
                                 p7.setBackgroundResource(R.drawable.textview_border);
                                 progress.setText("Lock "+lockInAction+" is reset.");
-                                readLockDetails.remove(al.indexOf(lockInAction));
-                                al.remove(lockInAction);
+                              //  readLockDetails.remove(al.indexOf(lockInAction));
+                                //al.remove(lockInAction);
                                 aa.notifyDataSetChanged();
                                 if (al.size()==0)
                                 {
